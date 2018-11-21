@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Animal Kindoms</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="style.css">
+
+</head>
+
+<body>
+    <embed src="turkey_in_the_straw.mid"autostart="true" hidden="true" loop="true"></embed>
+  <div class="container">
+    <div id="animal-view"></div>
+
+    <form id="animal-form">
+      <label for="animal-input"></label>
+      <input type="text" id="animal-input"><br>
+
+      <!-- Button triggers new movie to be added -->
+      <input id="add-animal" type="submit" value="Add a Animal">
+    </form>
+    <div id="gifs-appear-here"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      var animals = ["Tiger", "Rabbit", "Dragon", "Horse", "Goat", "Monkey", "Panda"];
+
+
+      function renderButton() {
+
+        $("#animal-view").empty();
+
+        for (var i = 0; i < animals.length; i++) {
+          var a = $("<button>");
+          // Adding a class
+          a.addClass("animal");
+          // Adding a data-attribute with a value of the movie at index i
+          a.attr("data-animal", animals[i]);
+          // Providing the button's text with a value of the movie at index i
+          a.text(animals[i]);
+          // Adding the button to the HTML
+          $("#animal-view").append(a);
+        }
+      }
+      $("#add-animal").on("click", function (event) {
+        event.preventDefault();
+        var newAnimal = $("#animal-input").val().trim();
+        animals.push(newAnimal);
+        renderButton();
+      });
+      renderButton();
+
+      $(document).on("click", ".animal", function () {
+        var eachAnimal = $(this).attr("data-animal");
+        var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+          eachAnimal + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+        $("#gifs-appear-here").empty();
+
+        $.ajax({
+          url: queryURL,
+          method: "GET"
+        }).then(function (response) {
+          //  <img src="https://media1.giphy.com/media/3o85xkQpyMlnBkpB9C/200_s.gif" data-still="https://media1.giphy.com/media/3o85xkQpyMlnBkpB9C/200_s.gif" data-animate="https://media1.giphy.com/media/3o85xkQpyMlnBkpB9C/200.gif" data-state="still" class="gif">
+
+          //storing the response in then result valuable as a object
+          var results = response.data;
+        
+          for (var i = 0; i < results.length; i++) {
+            var gifDiv = $("<div>");
+
+            var animalImage = $("<img>");
+            animalImage.addClass("animal-image");
+            animalImage.attr("src", results[i].images.fixed_height.url);
+            animalImage.attr("data-still", results[i].images.fixed_height_still.url);
+            animalImage.attr("data-animate", results[i].images.fixed_height.url);
+            animalImage.attr("data-state", "animate");
+
+            gifDiv.prepend(animalImage);
+
+            $("#gifs-appear-here").prepend(gifDiv);
+          }
+        });
+      });
+
+      $(document).on("click",".animal-image", function () {
+        var state = $(this).attr("data-state");
+
+        if (state === "still") {
+          var animateUrl = $(this).attr("data-animate");
+          $(this).attr("src", animateUrl);
+          $(this).attr("data-state", "animate");
+        } else {
+          var stillUrl = $(this).attr("data-still");
+          $(this).attr("src", stillUrl);
+          $(this).attr("data-state", "still");
+        }
+
+      });
+    </script>
+
+
+  </div>
+</body>
+
+</html>
